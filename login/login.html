@@ -39,7 +39,7 @@
                         <a href="/forgotpass">Forgot password</a>
                     </div>
 
-                    <div class ="errorMessage" id="error-message" style="color: red; display: none;">Invalid email or password</div>
+                    <div id="errorMessage" style="color: red;"></div>
 
                     <button type="submit" class="btn" id="submitButton">Continue</button>
                     
@@ -51,42 +51,20 @@
                         <p>dont have an account?  <a href="/cr">signup</a></p>
                     </div>
                 </form>
-                <!-- <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const form = document.getElementById('form');
-                        const submitButton = document.getElementById('submitButton');
-    
-                        form.addEventListener('input', function() {
-                            const allFieldsFilled = [...form.querySelectorAll('input')].every(input => input.value.trim() !== '');
-                            if (allFieldsFilled) {
-                                submitButton.classList.add('typed');
-                            } else {
-                                submitButton.classList.remove('typed');
-                            }
-                        });
-                    });
-                </script>
-            </div>   
-        </div>
-
         <script>
-            window.addEventListener("load", ()=>{
-                const loader = document.querySelector(".loader");
-                loader.classList.add("loader-hidden")
-                loader.addEventListener("transitioned", ()=>{
-                    document.body.removeChild("loader")
-                })
+            // Clear sessionStorage on logout
+            document.addEventListener("DOMContentLoaded", () => {
+                sessionStorage.clear();
+            });
 
-            })
-        </script> -->
-        <script>
+
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('form');
                 const submitButton = document.getElementById('submitButton');
-                const errorMessage = document.getElementById('error-message');
+                var errorMessage = document.getElementById('errorMessage');
         
                 form.addEventListener('submit', async function(event) {
-                    event.preventDefault(); // Prevent the default form submission
+                    event.preventDefault(); 
         
                     const formData = new FormData(form);
                     const data = {};
@@ -102,18 +80,27 @@
                             },
                             body: JSON.stringify(data),
                         });
-        
+                        console.log(response['status'])
+                        if(response['status']==401){
+                            console.log("invalid pass")
+                            errorMessage.textContent = "Invalid email or password"
+                        }
                         if (!response.ok) {
                             const result = await response.json();
                             if (result.error) {
-                                errorMessage.textContent = result.error; // Set the error message
-                                errorMessage.style.display = 'block'; // Display the message
+                                errorMessage.textContent = result.error; 
+                              
                             }
-                        } else {
-                            window.location.href = '/home'; // Redirect to home on successful login
+                            else{
+                                errorMessage.textContent = "mmmm";
+                            }
+                        }
+                        
+                        else {
+                            window.location.href = '/home'; 
                         }
                     } catch (error) {
-                        console.error('Error:', error);
+                        console.log(error);
                     }
                 });
         

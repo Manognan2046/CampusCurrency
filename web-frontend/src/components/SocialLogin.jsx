@@ -1,15 +1,17 @@
 import googleIcon from "../assets/google.svg";
 import appleIcon from "../assets/apple.svg";
 
+import styles from "../styles/Components/sociallogin.module.css";
+
 const SocialLogin = () => {
   return (
-    <div className="social-login">
-      <button className="social-button">
-        <img src={googleIcon} alt="Google" className="social-icon" />
+    <div className={styles.socialLogin}>
+      <button className={styles.socialButton}>
+        <img src={googleIcon} alt="Google" className={styles.socialIcon} />
         Google
       </button>
-      <button className="social-button">
-        <img src={appleIcon} alt="Apple" className="social-icon" />
+      <button className={styles.socialButton}>
+        <img src={appleIcon} alt="Apple" className={styles.socialIcon} />
         Apple
       </button>
     </div>

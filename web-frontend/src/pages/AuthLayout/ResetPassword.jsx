@@ -1,17 +1,17 @@
 import InputField from "../../components/InputField";
 
-import "../../styles/AuthLayout/resetpassword.css";
+import styles from "../../styles/AuthLayout/resetpassword.module.css";
 
-const Login = () => {
+const ResetPassword = () => {
   return (
     <>
-      <h2 className="form-title reset-header">Reset Password</h2>
+      <h2 className={styles.resetHeader}>Reset Password</h2>
 
-      <form className="login-form">
-        <InputField type="email" placeholder="New Password" icon="key" />
+      <form className={styles.resetForm}>
+        <InputField type="password" placeholder="New Password" icon="key" />
         <InputField type="password" placeholder="Retype Password" icon="key" />
 
-        <button type="submit" className="reset-button">
+        <button type="submit" className={styles.resetButton}>
           Reset
         </button>
       </form>
@@ -19,4 +19,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword;

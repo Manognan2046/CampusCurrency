@@ -1,9 +1,0 @@
-.signup-container {
-    max-width: 600px;
-}
-
-.login-form .boxcol {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
-}

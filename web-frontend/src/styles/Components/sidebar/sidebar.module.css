@@ -1,24 +1,31 @@
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100vh;
-    max-width: 250px;
-    background-color: #130065;
-    padding: 20px;
-    margin: 0;
-}
-
-.sideMenu {
-    margin-top: -50vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 250px;
+  background-color: #130065;
+  padding: 20px;
+  margin: 0;
 }
 
 .logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding : 20px;
-    font-size: 24px;
-    font-weight: bold;
-    color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 40px;
+}
+
+.sideMenu {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+
+.sidebarFooter {
+  margin-top: auto;
 }

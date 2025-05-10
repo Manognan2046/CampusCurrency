@@ -12,7 +12,10 @@ const NavItem = ({ icon, text, link, active }) => {
           isLogout ? styles.logout : ""
         }`}
       >
-        <span className={`material-symbols-rounded ${styles.inputIcon}`}>
+        <span
+          className={`material-symbols-rounded ${styles.inputIcon}`}
+          style={{ textDecoration: "none" }}
+        >
           {icon}
         </span>
         <span className={styles.navText}>{text}</span>

@@ -15,6 +15,8 @@ import {Web3} from "web3";
 import fs from 'fs';
 import abi from "erc-20-abi" with { type: "json" }
 import QrScanner from "qr-scanner";
+import path from 'path';
+import cors from 'cors'
 const web3 = new Web3(new Web3.providers.HttpProvider("https://polygon-mainnet.infura.io/v3/9049056b2eb8402dab158c7fc245d45e"));
 const chain = EvmChain.POLYGON;
 const { Schema, model } = mongoose;
@@ -97,42 +99,67 @@ function otp_() {
 }
 let otp = "";
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/login/login.html");
+
+app.use(express.static(path.join(__dirname, '../web-frontend/dist')));
+
+app.use(cors()); 
+app.use(express.json());
+
+app.post("/api/verify", async (req, res) => {
+  try {
+    const user = await User.findOne(
+      { email: req.body.email },
+      { _id: 0, lname: 0, fname: 0, rollno: 0, __v: 0 }
+    );
+    if (user && (await bcrypt.compare(req.body.password, user.password))) {
+      const token = jwt.sign(
+        { email: req.body.email },
+        process.env.ACCESS_TOKEN_SECRET
+      );
+      req.session.accesstoken = token;
+      req.session.email = req.body.email;
+
+      res.json({verification:true})
+    
+    } else {
+       res.json({verification:false})
+       
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-app.get("/cssl", (req, res) => {
-  res.sendFile(__dirname + "/public/login/stylelogin.css");
+
+app.post("/api/signup", async (req, res) => {
+  try {
+    const { password, rollno,pin, ...userData } = req.body;
+    userData.password = await bcrypt.hash(password, 10);
+    
+    const existingUser = await User.findOne({ rollno });
+    if (!existingUser && pin.length==4) {
+      
+      const newWallet = await web3.eth.accounts.create();
+      const newUser = new User({ ...userData, rollno});
+      newUser.address=newWallet['address'];
+      newUser.pin = await bcrypt.hash(pin,10);
+      newUser.privatekey = await web3.eth.accounts.encrypt(newWallet['privateKey'],process.env.SALT);
+      console.log(newUser);
+      await newUser.save();
+      res.json({signedup:true});
+    } else {
+      res.json({signedup:false});
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-app.get("/back.jpg", (req, res) => {
-  res.sendFile(__dirname + "/public/login/back.jpg");
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../web-frontend/dist', 'index.html'));
 });
-
-app.get("/csscr", (req, res) => {
-  res.sendFile(__dirname + "/public/login/stylecr.css");
-});
-
-app.get("/cssfp", (req, res) => {
-  res.sendFile(__dirname + "/public/login/styleforgotpass.css");
-});
-
-app.get("/cssr", (req, res) => {
-  res.sendFile(__dirname + "/public/login/stylereset.css");
-});
-
-app.get("/cr", (req, res) => {
-  res.sendFile(__dirname + "/public/login/createacc.html");
-});
-
-app.get("/login", (req, res) => {
-  res.sendFile(__dirname + "/public/login/login.html");
-});
-
-app.get("/home", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/home.html");
-});
-
 
 app.get("/transuccs", tokenauth, (req, res) => {
   const { receiverName, amountSent, transactionHash, status } = req.query;
@@ -165,33 +192,6 @@ app.get("/transuccs", tokenauth, (req, res) => {
 
 
 
-app.get("/connections", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/connections.html");
-});
-
-app.get("/profile", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/profile.html");
-});
-
-app.get("/homecss", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/home.css");
-});
-
-app.get("/settingscss", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/settings.css");
-});
-
-app.get("/profilecss", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/profile.css");
-});
-
-app.get("/connectionscss", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/connections.css");
-});
-
-app.get("/qr-scanner", tokenauth, (req, res) => {
-  res.sendFile(__dirname + "/public/home/QRScanner.html");
-});
 
 
 app.get("/logout", (req, res) => {
@@ -397,30 +397,7 @@ app.post("/pay", async (req, res) => {
 });
 
 
-app.post("/", async (req, res) => {
-  try {
-    const user = await User.findOne(
-      { email: req.body.email },
-      { _id: 0, lname: 0, fname: 0, rollno: 0, __v: 0 }
-    );
-    if (user && (await bcrypt.compare(req.body.password, user.password))) {
-      const token = jwt.sign(
-        { email: req.body.email },
-        process.env.ACCESS_TOKEN_SECRET
-      );
-      req.session.accesstoken = token;
-      req.session.email = req.body.email;
 
-      res.sendFile(__dirname + "/public/home/home.html");
-      console.log("Token and email stored in session");
-    } else {
-      res.status(401)
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
 
 app.post("/rp", async (req, res) => {
   try {
@@ -444,30 +421,7 @@ app.post("/rp", async (req, res) => {
   }
 });
 
-app.post("/c", async (req, res) => {
-  try {
-    const { password, rollno,pin, ...userData } = req.body;
-    userData.password = await bcrypt.hash(password, 10);
-    
-    const existingUser = await User.findOne({ rollno });
-    if (!existingUser && pin.length==4) {
-      
-      const newWallet = await web3.eth.accounts.create();
-      const newUser = new User({ ...userData, rollno});
-      newUser.address=newWallet['address'];
-      newUser.pin = await bcrypt.hash(pin,10);
-      newUser.privatekey = await web3.eth.accounts.encrypt(newWallet['privateKey'],process.env.SALT);
-      console.log(newUser);
-      await newUser.save();
-      res.sendFile(__dirname + "/public/login/login.html");
-    } else {
-      res.status(400).send("User already exists");
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
+
 
 app.post("/sendotp", async (req, res) => {
   try {
@@ -610,9 +564,7 @@ app.get('/user', tokenauth, async (req, res) => {
 app.use(express.static('public')); 
 
 
-app.get("/search.js", (req, res) => {
-  res.sendFile(__dirname + "/public/home/search.js");
-});
+
 
 app.use((req, res, next) => {
   if (req.url.endsWith('.js')) {

@@ -17,6 +17,7 @@ import abi from "erc-20-abi" with { type: "json" }
 import QrScanner from "qr-scanner";
 import path from 'path';
 import cors from 'cors'
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 const web3 = new Web3(new Web3.providers.HttpProvider("https://polygon-mainnet.infura.io/v3/9049056b2eb8402dab158c7fc245d45e"));
 const chain = EvmChain.POLYGON;
 const { Schema, model } = mongoose;
@@ -31,12 +32,8 @@ const userSchema = new Schema({
   privatekey: JSON
 });
 const User = model("User", userSchema);
-
-mongoose.connect(process.env.MONGO_URI, 
-  {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+const OTPS={}
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -157,6 +154,50 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
+app.post("/api/sendotp", async (req, res) => {
+  try {
+    
+    const email = req.body.email;
+    const user = await User.findOne({ email });
+
+    if (user) {
+      otp = otp_();
+      console.log(otp)
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Password Reset",
+        text: `Your OTP is ${otp}`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log("Email sent: " + info.response);
+          OTPS[email] = otp;
+        }
+      });
+    } else {
+      console.log("Email not found");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+
+app.post("/api/verifyotp", (req, res) => {
+  if (req.body.otp === OTPS[req.body.email]) {
+    res.json({verified:true})
+  } else {
+    console.log("Invalid OTP");
+    res.json({verified:false})
+  }
+});
+
+
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../web-frontend/dist', 'index.html'));
 });
@@ -189,7 +230,6 @@ app.get("/transuccs", tokenauth, (req, res) => {
       res.status(500).send("Server error");
     });
 });
-
 
 
 
@@ -423,46 +463,9 @@ app.post("/rp", async (req, res) => {
 
 
 
-app.post("/sendotp", async (req, res) => {
-  try {
-    const email = req.body.email;
-    const user = await User.findOne({ email });
 
-    if (user) {
-      otp = otp_();
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Password Reset",
-        text: `Your OTP is ${otp}`,
-      };
 
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-          res.status(500).send("Failed to send OTP");
-        } else {
-          console.log("Email sent: " + info.response);
-          res.sendFile(__dirname + "/public/login/forgot.html");
-        }
-      });
-    } else {
-      res.status(404).send("Email not found");
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
 
-app.post("/reset", (req, res) => {
-  if (req.body.otp === otp) {
-    res.sendFile(__dirname + "/public/login/reset.html");
-  } else {
-    console.log("Invalid OTP");
-    res.status(400).send("Invalid OTP");
-  }
-});
 
 app.get("/forgotpass", (req, res) => {
   res.sendFile(__dirname + "/public/login/forgot.html");

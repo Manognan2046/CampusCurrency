@@ -34,7 +34,7 @@
     "web3": "^4.15.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.10"
   },
   "description": "\"Seamless Token Transactions across the college\" Revolutionizing Digital Exchanges"
 }

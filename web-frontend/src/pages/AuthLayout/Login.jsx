@@ -2,43 +2,48 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import SocialLogin from "../../components/SocialLogin";
 import InputField from "../../components/InputField";
+import ErrorLogin from "../../components/ErrorLogin";
 
 import styles from "../../styles/AuthLayout/login.module.css";
+import { set } from "mongoose";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [correct, setCorrect] = useState(true);
+  const [server, setServer] = useState(true);
 
-  const verify = async (event)=>{
+  const verify = async (event) => {
     event.preventDefault();
-      const data = {
-    email: event.target[0].value,
-    password: event.target[1].value
+    const data = {
+      email: event.target[0].value,
+      password: event.target[1].value,
+    };
+    try {
+      const response = await fetch("/api/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const res = await response.json();
+      if (res.verification === true) {
+        navigate("/home");
+      } else {
+        setCorrect(false);
+        setTimeout(() => {
+          setCorrect(true);
+        }, 2000);
       }
-  try {
-    const response = await fetch('/api/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-  const res = await response.json();
-  if(res.verification===true){
-    navigate('/home')
-  }
-  else{
-    navigate('/login')
-  }
-  }
-  catch(err){
-    console.log(err);
-  }
-
-}
+    } catch (err) {
+      setServer(false);
+      setTimeout(() => {
+        setServer(true);
+      }, 2000);
+    }
+  };
   return (
-    
     <>
-
       <h2 className={styles.formTitle}>Log in with</h2>
       <SocialLogin />
 
@@ -47,18 +52,28 @@ const Login = () => {
       </p>
 
       <form onSubmit={verify} className={styles.loginForm}>
-        <InputField name="email" type="email" placeholder="Email Address" icon="mail" />
-        <InputField name="password" type="password" placeholder="Password" icon="key" />
+        <InputField
+          name="email"
+          type="email"
+          placeholder="Email Address"
+          icon="mail"
+        />
+        <InputField
+          name="password"
+          type="password"
+          placeholder="Password"
+          icon="key"
+        />
 
         <Link to="/verification" className={styles.forgotPasswordLink}>
           Forgot password?
         </Link>
-        
-    
-          <button className={styles.loginButton} type="submit">
-            Log In
-          </button>
-       
+
+        <ErrorLogin correct={correct} />
+
+        <button className={styles.loginButton} type="submit">
+          Log In
+        </button>
       </form>
 
       <p className={styles.signupPrompt}>

@@ -1,0 +1,12 @@
+.errorLogin {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: red;
+    margin-top: 13px;
+}
+
+.errorLoginIncorrect {
+    display: flex;
+}

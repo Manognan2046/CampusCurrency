@@ -1,16 +1,16 @@
 import { useState } from "react";
 import styles from "../styles/Components/inputField.module.css";
 
-const InputField = ({ type, placeholder, icon }) => {
+const InputField = ({ name, type, placeholder, icon }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
 
   return (
     <div className={styles.inputWrapper}>
       <input
+        name={name}
         type={isPasswordShown ? "text" : type}
         placeholder={placeholder}
         className={styles.inputField}
-     
       />
 
       <span className={`material-symbols-rounded ${styles.inputIcon}`}>
@@ -30,5 +30,6 @@ const InputField = ({ type, placeholder, icon }) => {
     </div>
   );
 };
+
 
 export default InputField;

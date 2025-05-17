@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import SocialLogin from "../../components/SocialLogin";
 import InputField from "../../components/InputField";
-import ErrorLogin from "../../components/ErrorLogin";
+import Error from "../../components/Error";
 
 import styles from "../../styles/AuthLayout/login.module.css";
 import { set } from "mongoose";
@@ -10,7 +10,7 @@ import { set } from "mongoose";
 const Login = () => {
   const navigate = useNavigate();
   const [correct, setCorrect] = useState(true);
-  const [server, setServer] = useState(true);
+  const [message, setMessage] = useState('');
 
   const verify = async (event) => {
     event.preventDefault();
@@ -31,12 +31,14 @@ const Login = () => {
         navigate("/home");
       } else {
         setCorrect(false);
+        setMessage("Invalid email or password");
         setTimeout(() => {
           setCorrect(true);
         }, 2000);
       }
     } catch (err) {
-      setServer(false);
+      setCorrect(false);
+      setMessage("Server error, please try again later");
       setTimeout(() => {
         setServer(true);
       }, 2000);
@@ -69,7 +71,7 @@ const Login = () => {
           Forgot password?
         </Link>
 
-        <ErrorLogin correct={correct} />
+        <Error correct={correct} message={message} />
 
         <button className={styles.loginButton} type="submit">
           Log In

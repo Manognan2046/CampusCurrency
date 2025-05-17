@@ -1,10 +1,10 @@
-import styles from '../styles/Components/errorLogin.module.css';
+import styles from '../styles/Components/error.module.css';
 
-const ErrorLogin = ({correct}) => {
+const ErrorLogin = ({correct, message}) => {
     return (
         <div className={`${styles.errorLogin} ${correct ? '' : styles.errorLoginIncorrect}`}>
             <span>
-                UserName or Password is incorrect
+                {message}
             </span>
         </div>
     );
